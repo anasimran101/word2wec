@@ -5,8 +5,8 @@ __global__ void hello_cuda() {
 }
 
 int main() {
-    hello_cuda<<<1, 10>>>(); // launch 1 block with 10 threads
-    cudaDeviceSynchronize(); // wait for GPU to finish
+    hello_cuda<<<1, 10>>>();
+    cudaDeviceSynchronize();
     std::cout << "CUDA kernel executed.\n";
     return 0;
 }
