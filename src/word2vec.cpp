@@ -10,7 +10,7 @@
 
 
 std::unordered_map<std::string, int> vocab_hash;
-extern std::vector<word> vocab_list;
+std::vector<word> vocab_list;
 
 std::string train_corpus_file, output_file;
 std::string save_vocab_file, read_vocab_file;
@@ -30,10 +30,14 @@ clock_t start;
 
 
 void testvocab() {
-
+    train_corpus_file = "corpus/minimal.txt";
+    save_vocab_file = "vocab/minimal_vocab.txt";
+    loadFromVocabFile(train_corpus_file);
+    saveVocab();
 }
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << "testing voacab" << std::endl;
+    testvocab();
     return 0;
 }
