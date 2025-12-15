@@ -68,6 +68,7 @@ int loadFromVocabFile(const std::string& vocab_file) {
         }
         insertWord({word, 1});
     }
+    vocab_size = vocab_list.size();
     return 0;
 }
 
@@ -83,6 +84,7 @@ int loadFromTrainFile(const std::string& vocab_file) {
         file >> word >> count;
         insertWord({word, count});
     }
+    vocab_size = vocab_list.size();
     return 0;
 }
 int saveVocab() {
