@@ -4,7 +4,7 @@ is 8
 a 4
 strong 2
 man 3
-</s> 10
+</s> 9
 queen 3
 wise 2
 woman 3
@@ -16,4 +16,3 @@ young 2
 princess 2
 are 1
 royal 3
-ÿ 1

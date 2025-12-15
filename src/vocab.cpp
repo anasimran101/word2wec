@@ -9,14 +9,12 @@
  
 
 int loadWordFromFile(std::string& word, std::ifstream& file) {
-    int a = 0;
     char ch;
     word.clear();
-    while (!file.eof()) {
-        ch = file.get();
+    while (file.get(ch)) {
         if (ch == '\r') continue;
         if ((ch == ' ') || (ch == '\t') || (ch == '\n')) {
-            if (a > 0) {
+            if (!word.empty()) {
                 if (ch == '\n') file.unget();
                 break;
             }
@@ -25,11 +23,9 @@ int loadWordFromFile(std::string& word, std::ifstream& file) {
                 break;
             } else continue;
         }
-        word.push_back((char)ch);
-        a++;
-        if (a >= MAX_STRING - 1) a--;   // Truncate too long words
+        word.push_back(ch);
     }
-    return 0;
+    return !word.empty();
 }
 
 int getWordIndex(const std::string& word) {
@@ -62,8 +58,8 @@ int loadFromVocabFile(const std::string& vocab_file) {
     }
     std::string word;
     int i;
-    while(!file.eof()){
-        loadWordFromFile(word, file);
+    while(loadWordFromFile(word, file)){
+        
         std::cout << "Loaded word: " << word << std::endl;
         i = getWordIndex(word);
         if(i != -1) {
