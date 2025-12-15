@@ -13,8 +13,8 @@ struct word {
     int count;
 };
 
-std::unordered_map<std::string, int> vocab_hash;
-std::vector<word> vocab_list;
+extern std::unordered_map<std::string, int> vocab_hash;
+extern std::vector<word> vocab_list;
 
 int loadWordFromFile(std::string& word, std::ifstream& file);
 int loadFromVocabFile(const std::string& vocab_file);

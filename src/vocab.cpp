@@ -6,6 +6,7 @@
 
 
 #include "vocab.h"
+ 
 
 int loadWordFromFile(std::string& word, std::ifstream& file) {
     int a = 0;

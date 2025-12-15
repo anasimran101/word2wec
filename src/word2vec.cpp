@@ -10,7 +10,7 @@
 
 
 std::unordered_map<std::string, int> vocab_hash;
-std::vector<word> vocab_list;
+extern std::vector<word> vocab_list;
 
 std::string train_corpus_file, output_file;
 std::string save_vocab_file, read_vocab_file;
