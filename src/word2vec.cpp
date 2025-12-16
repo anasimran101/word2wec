@@ -14,11 +14,11 @@
 #define MAX_SENTENCE_NUM 10
 
 std::unordered_map<std::string, int> vocab_hash;
-std::vector<word_index> vocab_list;
+std::vector<word> vocab_list;
 
 std::string train_corpus_file, output_file;
 std::string save_vocab_file, read_vocab_file;
-struct word_index *vocab;
+struct word *vocab;
 std::ifstream fin;
 
 int window = 5, min_count = 5, num_threads = 12, min_reduce = 1;
@@ -40,7 +40,7 @@ void initUnigramDistribuiton()
 {
     table = new int[table_size];
     double a = 0.75;
-    double sum_p = 0.0, p_w;
+    double sum_p = 0.0, p_w = 0.0;
     size_t index = 0, prev_index = 0;
     for (size_t i = 0; i < vocab_list.size(); i++)
         sum_p += pow(vocab_list[i].count, a);
@@ -49,7 +49,7 @@ void initUnigramDistribuiton()
         p_w += pow(vocab_list[i].count, a) / sum_p;
         prev_index = index;
         index = p_w * table_size;
-        std::cout << "Word: " << vocab_list[i].word_index << " Prob: " << p_w << " Index: " << index << std::endl;
+        std::cout << "Word: " << vocab_list[i].word << " Prob: " << p_w << " Index: " << index << std::endl;
         for (size_t j = prev_index; j < index && j < table_size; j++)
         {
             table[j] = i;
@@ -59,7 +59,7 @@ void initUnigramDistribuiton()
         table[index++] = vocab_list.size() - 1;
 }
 
-void InitNet();
+void InitNet() {};
 
 
 void *TrainModelThread(void *id)
@@ -91,7 +91,6 @@ void *TrainModelThread(void *id)
                 alpha = starting_alpha * 0.0001;
         }
         std::string word;
-        int word_index;
         while (1)
         {
             loadWordFromFile(word, fi);
@@ -147,29 +146,33 @@ void *TrainModelThread(void *id)
 
 void TrainModel()
 {
-    long a, b, c, d;
+    long a, b;
     pthread_t *pt = (pthread_t *)malloc(num_threads * sizeof(pthread_t));
     std::cout << "Starting training using file " << train_corpus_file << std::endl;
     starting_alpha = alpha;
     if (!read_vocab_file.empty())
+
         loadFromVocabFile(read_vocab_file);
     else
         loadFromTrainFile(train_corpus_file);
     if (!save_vocab_file.empty())
         saveVocab();
-    if (output_file[0] == 0)
+    if (output_file.empty())
         return;
+    
     InitNet();
     
     initUnigramDistribuiton();
     initGpu();
+
+    std::cout << "Training model" << std::endl;
     start = clock();
     for (a = 0; a < num_threads; a++)
         pthread_create(&pt[a], NULL, TrainModelThread, (void *)a);
     for (a = 0; a < num_threads; a++)
         pthread_join(pt[a], NULL);
     freeGpu();
-    // Save the word_index vectors
+    // Save  the word_index vectors
 
     std::ofstream out(output_file, binary ? std::ios::binary : std::ios::out);
     
@@ -177,7 +180,7 @@ void TrainModel()
     out << vocab_size << " " << layer1_size << std::endl;
     for (size_t i = 0; i < vocab_size; i++)
     {
-        out >> vocab_list[i] << " ";
+        out << vocab_list[i].word << " ";
         if (binary)
             for (b = 0; b < layer1_size; b++)
                 out << syn0[i * layer1_size_aligned + b] << " ";
@@ -198,7 +201,7 @@ void testvocab()
 {
     train_corpus_file = "corpus/minimal.txt";
     save_vocab_file = "vocab/minimal_vocab.txt";
-    loadFromVocabFile(train_corpus_file);
+    loadFromTrainFile(train_corpus_file);
     saveVocab();
 }
 
@@ -224,6 +227,13 @@ int main()
     std::cout << "testing table" << std::endl;
     testtable();
 
+    std::cout << "Training model" << std::endl;
+    train_corpus_file = "corpus/minimal.txt";
+    output_file = "vectors.txt";
+    read_vocab_file="";
+    save_vocab_file = "vocab/minimal_vocab.txt";
+    TrainModel();
+    initGpu();
     destroy();
     return 0;
 }
