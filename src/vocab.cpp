@@ -49,8 +49,8 @@ int insertWord(const word& word) {
 
 
 
-// load from file with { word count }format
-int loadFromVocabFile(const std::string& vocab_file) {
+
+int loadFromTrainFile(const std::string& vocab_file) {
     std::ifstream file(vocab_file);
     if (!file.is_open()) {
         std::cerr << "Error opening vocabulary file: " << vocab_file << std::endl;
@@ -69,13 +69,15 @@ int loadFromVocabFile(const std::string& vocab_file) {
         insertWord({word, 1});
     }
     vocab_size = vocab_list.size();
+    file.close();
     return 0;
 }
 
-int loadFromTrainFile(const std::string& vocab_file) {
-    std::ifstream file(train_corpus_file);
+// load from file with { word count }format
+int loadFromVocabFile(const std::string& vocab_file) {
+    std::ifstream file(vocab_file);
     if (!file.is_open()) {
-        std::cerr << "Error opening training file: " << train_corpus_file << std::endl;
+        std::cerr << "Error opening training file: " << vocab_file << std::endl;
         return -1;
     }
     std::string word;
@@ -85,6 +87,7 @@ int loadFromTrainFile(const std::string& vocab_file) {
         insertWord({word, count});
     }
     vocab_size = vocab_list.size();
+    file.close();
     return 0;
 }
 int saveVocab() {
