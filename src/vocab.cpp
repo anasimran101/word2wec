@@ -69,6 +69,9 @@ int loadFromTrainFile(const std::string& vocab_file) {
         }
         insertWord({word, 1});
     }
+    file.clear();
+    file.seekg(0, std::ios::end);
+    file_size = file.tellg();
     vocab_size = vocab_list.size();
     file.close();
     return 0;
@@ -90,6 +93,9 @@ int loadFromVocabFile(const std::string& vocab_file) {
         insertWord({word, count});
     }
     vocab_size = vocab_list.size();
+    file.clear();
+    file.seekg(0, std::ios::end);
+    file_size = file.tellg();
     file.close();
     return 0;
 }

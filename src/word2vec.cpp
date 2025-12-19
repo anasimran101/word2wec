@@ -21,12 +21,13 @@ std::string save_vocab_file, read_vocab_file;
 struct word *vocab;
 std::ifstream fin;
 
-int window = 5, min_count = 5, num_threads = 12, min_reduce = 1;
+int window = 5, min_count = 5, num_threads = 4, min_reduce = 1;
 
 size_t vocab_size = 0, layer1_size = 100, layer1_size_aligned = ((layer1_size + 15) / 16) * 16;
 
+int vocab_size = 0, layer1_size = 100,  layer1_size_aligned;;
 long long train_words = 0, word_count_actual = 0, file_size = 0;
-int epochs = 20;
+int epochs = 5;
 float alpha = 0.025, starting_alpha, sample = 1e-3;
 float *syn0;
 int *sen;
@@ -231,7 +232,7 @@ void testvocab()
 {
     train_corpus_file = "corpus/minimal.txt";
     save_vocab_file = "vocab/minimal_vocab.txt";
-    loadFromTrainFile(train_corpus_file);
+    loadFromVocabFile(train_corpus_file);
     saveVocab();
 }
 
