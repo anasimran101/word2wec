@@ -56,6 +56,7 @@ int loadFromTrainFile(const std::string& vocab_file) {
         std::cerr << "Error opening vocabulary file: " << vocab_file << std::endl;
         return -1;
     }
+    insertWord({"</s>", 0}); // add sentence end token as first word
     std::string word;
     int i;
     while(loadWordFromFile(word, file)){
@@ -80,6 +81,7 @@ int loadFromVocabFile(const std::string& vocab_file) {
         std::cerr << "Error opening training file: " << vocab_file << std::endl;
         return -1;
     }
+    insertWord({"</s>", 0}); // add sentence end token as first word
     std::string word;
     int count = 0;
     while (!file.eof()){
