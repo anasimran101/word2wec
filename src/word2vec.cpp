@@ -10,8 +10,6 @@
 #include <map>
 #include <skipgram.h>
 
-#define MAX_SENTENCE_LENGTH 10
-#define MAX_SENTENCE_NUM 10
 
 std::unordered_map<std::string, int> vocab_hash;
 std::vector<word> vocab_list;
@@ -23,9 +21,7 @@ std::ifstream fin;
 
 int window = 5, min_count = 5, num_threads = 4, min_reduce = 1;
 
-size_t vocab_size = 0, layer1_size = 100, layer1_size_aligned = ((layer1_size + 15) / 16) * 16;
-
-int vocab_size = 0, layer1_size = 100,  layer1_size_aligned;;
+int vocab_size = 0, layer1_size = 100, layer1_size_aligned = ((layer1_size + 15) / 16) * 16;
 long long train_words = 0, word_count_actual = 0, file_size = 0;
 int epochs = 5;
 float alpha = 0.025, starting_alpha, sample = 1e-3;
@@ -103,14 +99,14 @@ void *TrainModelThread(void *id)
     sentence_num = 0;
     while (1)
     {
-        if (word_count - last_word_count > 10000)
+        if (word_count - last_word_count > 5)
         {
             // No mutual exclusion here for word_count_actual, which is ok (hogwild)
             word_count_actual += word_count - last_word_count;
             last_word_count = word_count;
             now = clock();
             std::cout << "Alpha: " << alpha << "  Progress: " << ((word_count_actual / (float)(epochs * train_words + 1)) * 100) 
-            << "%  Words/thread/sec: " << (word_count_actual / ((float)(now - start + 1) / (float)CLOCKS_PER_SEC * 1000)) << "k  ";
+            << "%  Words/thread/sec: " << (word_count_actual / ((float)(now - start + 1) / (float)CLOCKS_PER_SEC * 1000)) << "k\n";
             std::cout.flush();
             //decay alpha as sarting_aplha * progress_ratio
             alpha = starting_alpha * (1 - word_count_actual / (float)(epochs * train_words + 1));
