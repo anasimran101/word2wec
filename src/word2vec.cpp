@@ -21,14 +21,14 @@ std::ifstream fin;
 
 int window = 5, min_count = 5, num_threads = 4, min_reduce = 1;
 
-int vocab_size = 0, layer1_size = 100, layer1_size_aligned = ((layer1_size + 15) / 16) * 16;
+int vocab_size = 0, layer1_size = 5, layer1_size_aligned = ((layer1_size + 15) / 16) * 16;
 long long train_words = 0, word_count_actual = 0, file_size = 0;
-int epochs = 5;
+int epochs = 1;
 float alpha = 0.025, starting_alpha, sample = 1e-3;
 float *syn0;
 int *sen;
 clock_t start;
-size_t table_size = 100;
+int table_size = 100;
 int *table;
 bool binary = false;
 int negative = 5;
@@ -85,6 +85,31 @@ void logPrameters() {
     std::cout << "Threads: " << num_threads << std::endl;
 }
 
+int saveVectors(const std::string filename) {
+    std::ofstream out(filename,  std::ios::out);
+    if (!out.is_open()) {
+        std::cerr << "Error opening vocabulary file: " << filename << std::endl;
+        return -1;
+    }
+
+    
+    out << vocab_size << " " << layer1_size << std::endl;
+    for (size_t i = 0; i < vocab_size; i++)
+    {
+        out << vocab_list[i].word << " ";
+        if (binary)
+            for (int b = 0; b < layer1_size; b++)
+                out << syn0[i * layer1_size_aligned + b] << " ";
+        else
+            for (int b = 0; b < layer1_size; b++)
+                out << syn0[i * layer1_size_aligned + b] << " ";
+        out << std::endl;
+    }
+    out.close();
+    return 0;
+}
+
+
 void *TrainModelThread(void *id)
 {
     int word_index, sentence_length = 0;
@@ -118,8 +143,7 @@ void *TrainModelThread(void *id)
         }
         while (1)
         {
-            if(loadWordFromFile(word, fi) == 0)
-                break;
+            loadWordFromFile(word,fi);
             word_index = getWordIndex(word); 
             if (fi.eof())
                 break;
@@ -151,7 +175,7 @@ void *TrainModelThread(void *id)
                     break;
             }
         }
-        testsen();
+        //testsen();
             
 
         // Do GPU training here
@@ -160,7 +184,7 @@ void *TrainModelThread(void *id)
         sentence_num = 0;
         sentence_length = 0;
 
-        if (loadWordFromFile(word, fi) == 0 || (word_count > train_words / num_threads))
+        if (fi.eof() || (word_count > train_words / num_threads))
         {
             std::cout << "Thread " << (long)id << " completed an epoch" << std::endl;
             word_count_actual += word_count - last_word_count;
@@ -197,7 +221,7 @@ void TrainModel()
     initUnigramDistribuiton();
     logPrameters();
     initGpu();
-
+    saveVectors("init_vectors.txt");
     
     start = clock();
     for (a = 0; a < num_threads; a++)
@@ -206,24 +230,9 @@ void TrainModel()
         pthread_join(pt[a], NULL);
     freeGpu();
     // Save  the word_index vectors
-
-    std::ofstream out(output_file, binary ? std::ios::binary : std::ios::out);
+    saveVectors(output_file);
     
-
-    out << vocab_size << " " << layer1_size << std::endl;
-    for (size_t i = 0; i < vocab_size; i++)
-    {
-        out << vocab_list[i].word << " ";
-        if (binary)
-            for (b = 0; b < layer1_size; b++)
-                out << syn0[i * layer1_size_aligned + b] << " ";
-        else
-            for (b = 0; b < layer1_size; b++)
-                out << syn0[i * layer1_size_aligned + b] << " ";
-        out << std::endl;
-    }
-    out.close();
-    free(pt);
+    //free(pt);
 }
 
 void destroy()
@@ -248,11 +257,11 @@ void testsen(){
         for (int j = 0; j < MAX_SENTENCE_LENGTH; j++)
             if (sen[i * MAX_SENTENCE_LENGTH + j] != -1)
             {
-                int k =sen[i * MAX_SENTENCE_LENGTH + j];
+                size_t k =sen[i * MAX_SENTENCE_LENGTH + j];
                 if (k < vocab_list.size())
                     std::cout << vocab_list[k].word << " ";
             }
-            std::cout << std::endl;
+        std::cout << std::endl;
     }
     std::cout << std::endl;
 }
