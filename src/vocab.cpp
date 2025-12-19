@@ -61,7 +61,7 @@ int loadFromTrainFile(const std::string& vocab_file) {
     int i;
     while(loadWordFromFile(word, file)){
         
-        std::cout << "Loaded word: " << word << std::endl;
+        //std::cout << "Loaded word: " << word << std::endl;
         i = getWordIndex(word);
         if(i != -1) {
             vocab_list[i].count += 1;

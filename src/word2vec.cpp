@@ -23,24 +23,25 @@ std::ifstream fin;
 
 int window = 5, min_count = 5, num_threads = 12, min_reduce = 1;
 
-size_t vocab_size = 0, layer1_size = 100, layer1_size_aligned;
+size_t vocab_size = 0, layer1_size = 100, layer1_size_aligned = ((layer1_size + 15) / 16) * 16;
 
 long long train_words = 0, word_count_actual = 0, file_size = 0;
-int epochs = 5;
-double alpha = 0.025, starting_alpha, sample = 1e-3;
-double *syn0;
+int epochs = 20;
+float alpha = 0.025, starting_alpha, sample = 1e-3;
+float *syn0;
 int *sen;
 clock_t start;
 size_t table_size = 100;
 int *table;
 bool binary = false;
+int negative = 5;
 
 // calculate wj^0.75 / SUM i= 0->n (w_i^0.75)
 void initUnigramDistribuiton()
 {
     table = new int[table_size];
-    double a = 0.75;
-    double sum_p = 0.0, p_w = 0.0;
+    float a = 0.75;
+    float sum_p = 0.0, p_w = 0.0;
     size_t index = 0, prev_index = 0;
     for (size_t i = 0; i < vocab_list.size(); i++)
         sum_p += pow(vocab_list[i].count, a);
@@ -49,7 +50,7 @@ void initUnigramDistribuiton()
         p_w += pow(vocab_list[i].count, a) / sum_p;
         prev_index = index;
         index = p_w * table_size;
-        std::cout << "Word: " << vocab_list[i].word << " Prob: " << p_w << " Index: " << index << std::endl;
+        //std::cout << "Word: " << vocab_list[i].word << " Prob: " << p_w << " Index: " << index << std::endl;
         for (size_t j = prev_index; j < index && j < table_size; j++)
         {
             table[j] = i;
@@ -59,11 +60,34 @@ void initUnigramDistribuiton()
         table[index++] = vocab_list.size() - 1;
 }
 
-void InitNet() {};
+void InitNet() {
+    int a, b;
+    unsigned int next_random = 1;
+    a = posix_memalign((void **)&syn0, 128, (int)vocab_size * layer1_size_aligned * sizeof(float));
+    if (syn0 == NULL) {printf("Memory allocation failed\n"); exit(1);}
 
+    for (a = 0; a < vocab_size; a++) for (b = 0; b < layer1_size; b++) {
+        next_random = next_random * (unsigned int)1664525 + 1013904223;
+        syn0[a * layer1_size_aligned + b] = (((next_random & 0xFFFF) / (float)65536) - 0.5) / layer1_size;
+    }
+}
+
+
+void logPrameters() {
+    std::cout << "Training model" << std::endl;
+    std::cout << "Vocab size: " << vocab_size << std::endl;
+    std::cout << "Words in train file: " << train_words << std::endl;
+    std::cout << "Table size: " << table_size << std::endl;
+    std::cout << "Layer1 size: " << layer1_size << std::endl;
+    std::cout << "Window size: " << window << std::endl;
+    std::cout << "Negative samples: " << negative << std::endl;
+    std::cout << "Epochs: " << epochs << std::endl;
+    std::cout << "Threads: " << num_threads << std::endl;
+}
 
 void *TrainModelThread(void *id)
 {
+    std::cout << "Thread " << (long)id << " started" << std::endl;
     int word_index, sentence_length = 0;
     long long word_count = 0, last_word_count = 0;
     int local_iter = epochs; //check
@@ -84,7 +108,7 @@ void *TrainModelThread(void *id)
             word_count_actual += word_count - last_word_count;
             last_word_count = word_count;
             now = clock();
-            std::cout << "\rAlpha: " << alpha << "  Progress: " << (word_count_actual / (float)(epochs * train_words + 1) * 100) 
+            std::cout << "Alpha: " << alpha << "  Progress: " << ((word_count_actual / (float)(epochs * train_words + 1)) * 100) 
             << "%  Words/thread/sec: " << (word_count_actual / ((float)(now - start + 1) / (float)CLOCKS_PER_SEC * 1000)) << "k  ";
             std::cout.flush();
             //decay alpha as sarting_aplha * progress_ratio
@@ -112,7 +136,7 @@ void *TrainModelThread(void *id)
                 float ran = (sqrt(v) + 1.0f) / v;
                 //psuedorandom number generator xn+1 = (a * xn + c) mod m
                 next_random = next_random * (unsigned int)1664525 + 1013904223;
-                // convert to [0,1] using lower 16 bits
+                // convert to [0,1] using lower 16 bits.
                 if (ran < (next_random & 0xFFFF) / (float)65536)
                     continue;
             }
@@ -171,7 +195,7 @@ void TrainModel()
     initUnigramDistribuiton();
     initGpu();
 
-    std::cout << "Training model" << std::endl;
+    
     start = clock();
     for (a = 0; a < num_threads; a++)
         pthread_create(&pt[a], NULL, TrainModelThread, (void *)a);
@@ -228,10 +252,11 @@ void testtable()
 
 int main()
 {
+    std::cout << __FILE__ << " "  << __LINE__ << std::endl;
     std::cout << "testing voacab" << std::endl;
-    testvocab();
+    //testvocab();
     std::cout << "testing table" << std::endl;
-    testtable();
+    //testtable();
 
     std::cout << "Training model" << std::endl;
     train_corpus_file = "corpus/minimal.txt";
@@ -239,7 +264,6 @@ int main()
     read_vocab_file="";
     save_vocab_file = "vocab/minimal_vocab.txt";
     TrainModel();
-    initGpu();
     destroy();
     return 0;
 }
