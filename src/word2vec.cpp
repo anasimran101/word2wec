@@ -70,6 +70,7 @@ void *TrainModelThread(void *id)
     unsigned int next_random = (long)id;
     int sentence_num;
     clock_t now;
+    //aplha array is at the end of sen array
     float *alpha_ptr = (float *)sen + MAX_SENTENCE_NUM * MAX_SENTENCE_LENGTH;
     std::ifstream fi(train_corpus_file, std::ios::in);
     fi.seekg(std::ios::pos_type(file_size / (int)num_threads * (long)id));
@@ -79,13 +80,14 @@ void *TrainModelThread(void *id)
     {
         if (word_count - last_word_count > 10000)
         {
+            // No mutual exclusion here for word_count_actual, which is ok (hogwild)
             word_count_actual += word_count - last_word_count;
             last_word_count = word_count;
             now = clock();
-            printf("%cAlpha: %f  Progress: %.2f%%  Words/thread/sec: %.2fk  ", 13, alpha,
-                    word_count_actual / (float)(epochs * train_words + 1) * 100,
-                    word_count_actual / ((float)(now - start + 1) / (float)CLOCKS_PER_SEC * 1000));
+            std::cout << "\rAlpha: " << alpha << "  Progress: " << (word_count_actual / (float)(epochs * train_words + 1) * 100) 
+            << "%  Words/thread/sec: " << (word_count_actual / ((float)(now - start + 1) / (float)CLOCKS_PER_SEC * 1000)) << "k  ";
             std::cout.flush();
+            //decay alpha as sarting_aplha * progress_ratio
             alpha = starting_alpha * (1 - word_count_actual / (float)(epochs * train_words + 1));
             if (alpha < starting_alpha * 0.0001)
                 alpha = starting_alpha * 0.0001;
@@ -105,8 +107,12 @@ void *TrainModelThread(void *id)
             // The subsampling randomly discards frequent words while keeping the ranking same
             if (sample > 0)
             {
-                float ran = (sqrt(vocab_list[word_index].count / (sample * train_words)) + 1) * (sample * train_words) / vocab_list[word_index].count;
+                //sample frequent words
+                float v = (float)vocab_list[word_index].count / (sample * train_words);
+                float ran = (sqrt(v) + 1.0f) / v;
+                //psuedorandom number generator xn+1 = (a * xn + c) mod m
                 next_random = next_random * (unsigned int)1664525 + 1013904223;
+                // convert to [0,1] using lower 16 bits
                 if (ran < (next_random & 0xFFFF) / (float)65536)
                     continue;
             }
