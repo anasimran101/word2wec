@@ -32,7 +32,7 @@ size_t table_size = 100;
 int *table;
 bool binary = false;
 int negative = 5;
-
+void testsen();
 // calculate wj^0.75 / SUM i= 0->n (w_i^0.75)
 void initUnigramDistribuiton()
 {
@@ -73,6 +73,9 @@ void InitNet() {
 void logPrameters() {
     std::cout << "Training model" << std::endl;
     std::cout << "Vocab size: " << vocab_size << std::endl;
+    std::cout << "Train File Size: " << file_size << " bytes" << std::endl;
+    std::cout << "Vector size: " << layer1_size << std::endl;
+    std::cout << "Alpha: " << alpha << std::endl;
     std::cout << "Words in train file: " << train_words << std::endl;
     std::cout << "Table size: " << table_size << std::endl;
     std::cout << "Layer1 size: " << layer1_size << std::endl;
@@ -84,7 +87,6 @@ void logPrameters() {
 
 void *TrainModelThread(void *id)
 {
-    std::cout << "Thread " << (long)id << " started" << std::endl;
     int word_index, sentence_length = 0;
     long long word_count = 0, last_word_count = 0;
     int local_iter = epochs; //check
@@ -97,6 +99,7 @@ void *TrainModelThread(void *id)
     fi.seekg(std::ios::pos_type(file_size / (int)num_threads * (long)id));
     sentence_length = 0;
     sentence_num = 0;
+    std::string word;
     while (1)
     {
         if (word_count - last_word_count > 5)
@@ -113,10 +116,10 @@ void *TrainModelThread(void *id)
             if (alpha < starting_alpha * 0.0001)
                 alpha = starting_alpha * 0.0001;
         }
-        std::string word;
         while (1)
         {
-            loadWordFromFile(word, fi);
+            if(loadWordFromFile(word, fi) == 0)
+                break;
             word_index = getWordIndex(word); 
             if (fi.eof())
                 break;
@@ -148,6 +151,8 @@ void *TrainModelThread(void *id)
                     break;
             }
         }
+        testsen();
+            
 
         // Do GPU training here
         trainGpu(sentence_num);
@@ -155,8 +160,9 @@ void *TrainModelThread(void *id)
         sentence_num = 0;
         sentence_length = 0;
 
-        if (fi.eof() || (word_count > train_words / num_threads))
+        if (loadWordFromFile(word, fi) == 0 || (word_count > train_words / num_threads))
         {
+            std::cout << "Thread " << (long)id << " completed an epoch" << std::endl;
             word_count_actual += word_count - last_word_count;
             local_iter--;
             if (local_iter == 0)
@@ -217,6 +223,7 @@ void TrainModel()
         out << std::endl;
     }
     out.close();
+    free(pt);
 }
 
 void destroy()
@@ -230,6 +237,24 @@ void testvocab()
     save_vocab_file = "vocab/minimal_vocab.txt";
     loadFromVocabFile(train_corpus_file);
     saveVocab();
+}
+
+void testsen(){
+    for (int i = 0; i < MAX_SENTENCE_NUM; i++)
+    {
+        if(sen[i * MAX_SENTENCE_LENGTH] == 0)
+            continue;
+        std::cout << "Sentence " << i << ": ";
+        for (int j = 0; j < MAX_SENTENCE_LENGTH; j++)
+            if (sen[i * MAX_SENTENCE_LENGTH + j] != -1)
+            {
+                int k =sen[i * MAX_SENTENCE_LENGTH + j];
+                if (k < vocab_list.size())
+                    std::cout << vocab_list[k].word << " ";
+            }
+            std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }
 
 void testtable()
