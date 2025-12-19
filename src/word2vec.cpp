@@ -191,8 +191,8 @@ void TrainModel()
         return;
     
     InitNet();
-    
     initUnigramDistribuiton();
+    logPrameters();
     initGpu();
 
     
