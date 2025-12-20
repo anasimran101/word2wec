@@ -1,0 +1,141 @@
+make && ./word2vec
+make[1]: Entering directory '/home/anas/cuda/word2wec'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/anas/cuda/word2wec'
+src/word2vec.cpp 289
+testing voacab
+testing table
+Training model
+Starting training using file corpus/alice.txt
+Number of CUDA devices: 1
+Device name: NVIDIA GeForce GTX 1080
+	Memory Clock Rate (KHz): 5005000
+	Memory Bus Width (bits): 256
+	Peak Memory Bandwidth (GB/s): 320.32
+	Total Global Memory (bytes): 8589803520
+	Compute Capability: 6.1
+
+Training model
+Vocab size: 5274
+Train File Size: 151191 bytes
+Vector size: 100
+Alpha: 0.025
+Words in train file: 29927
+Table size: 100000000
+Layer1 size: 100
+Window size: 5
+Negative samples: 5
+Epochs: 1
+Threads: 4
+Alpha: 0.025  Progress: 0.882117%  Words/thread/sec: 10.2748k
+Alpha: 0.0247795  Progress: 1.8177%  Words/thread/sec: 18.862k
+Alpha: 0.0245456  Progress: 2.71318%  Words/thread/sec: 27.4389k
+Alpha: 0.0243217  Progress: 3.61868%  Words/thread/sec: 35.556k
+Alpha: 0.0240953  Progress: 4.5008%  Words/thread/sec: 28.9348k
+Alpha: 0.0238748  Progress: 5.39628%  Words/thread/sec: 33.2688k
+Alpha: 0.0236509  Progress: 6.29511%  Words/thread/sec: 34.5606k
+Alpha: 0.0234262  Progress: 7.22735%  Words/thread/sec: 38.1865k
+Alpha: 0.0231932  Progress: 8.10946%  Words/thread/sec: 37.0342k
+Alpha: 0.0229726  Progress: 9.00829%  Words/thread/sec: 35.9275k
+Alpha: 0.0227479  Progress: 9.9305%  Words/thread/sec: 39.3637k
+Alpha: 0.0225174  Progress: 10.8561%  Words/thread/sec: 40.6995k
+Alpha: 0.022286  Progress: 11.7616%  Words/thread/sec: 40.0815k
+Alpha: 0.0220596  Progress: 12.6738%  Words/thread/sec: 42.5096k
+Alpha: 0.0218316  Progress: 13.5592%  Words/thread/sec: 41.5719k
+Alpha: 0.0216102  Progress: 14.448%  Words/thread/sec: 41.7766k
+Alpha: 0.021388  Progress: 15.3602%  Words/thread/sec: 43.4774k
+Alpha: 0.02116  Progress: 16.2824%  Words/thread/sec: 44.9892k
+Alpha: 0.0209294  Progress: 17.1979%  Words/thread/sec: 46.4183k
+Alpha: 0.0207005  Progress: 18.1235%  Words/thread/sec: 43.6139k
+Alpha: 0.0204691  Progress: 19.0056%  Words/thread/sec: 45.3072k
+Alpha: 0.0202486  Progress: 19.8978%  Words/thread/sec: 46.2327k
+Alpha: 0.0200256  Progress: 20.8099%  Words/thread/sec: 44.3315k
+Alpha: 0.0197975  Progress: 21.6921%  Words/thread/sec: 44.4481k
+Alpha: 0.019577  Progress: 22.5842%  Words/thread/sec: 45.2631k
+Alpha: 0.019354  Progress: 23.483%  Words/thread/sec: 45.1227k
+Alpha: 0.0191292  Progress: 24.3752%  Words/thread/sec: 42.617k
+Alpha: 0.0189062  Progress: 25.264%  Words/thread/sec: 43.9621k
+Alpha: 0.018684  Progress: 26.1728%  Words/thread/sec: 44.1749k
+Alpha: 0.0184568  Progress: 27.085%  Words/thread/sec: 45.1007k
+Alpha: 0.0182287  Progress: 28.0206%  Words/thread/sec: 43.6523k
+Alpha: 0.0179949  Progress: 28.9127%  Words/thread/sec: 44.2084k
+Alpha: 0.0177718  Progress: 29.8082%  Words/thread/sec: 43.9686k
+Alpha: 0.0175479  Progress: 30.707%  Words/thread/sec: 45.0605k
+Alpha: 0.0173232  Progress: 31.5891%  Words/thread/sec: 43.7007k
+Alpha: 0.0171027  Progress: 32.5047%  Words/thread/sec: 44.1135k
+Alpha: 0.0168738  Progress: 33.4135%  Words/thread/sec: 43.4128k
+Alpha: 0.0166466  Progress: 34.319%  Words/thread/sec: 44.2191k
+Alpha: 0.0164202  Progress: 35.2479%  Words/thread/sec: 44.3423k
+Alpha: 0.016188  Progress: 36.1367%  Words/thread/sec: 45.1411k
+Alpha: 0.0159658  Progress: 37.0456%  Words/thread/sec: 43.6628k
+Alpha: 0.0157386  Progress: 37.9344%  Words/thread/sec: 44.1672k
+Alpha: 0.0155164  Progress: 38.8332%  Words/thread/sec: 44.8716k
+Alpha: 0.0152917  Progress: 39.7454%  Words/thread/sec: 45.4067k
+Alpha: 0.0150637  Progress: 40.6609%  Words/thread/sec: 44.7137k
+Alpha: 0.0148348  Progress: 41.5497%  Words/thread/sec: 45.6175k
+Alpha: 0.0146126  Progress: 42.4619%  Words/thread/sec: 45.4031k
+Alpha: 0.0143845  Progress: 43.3507%  Words/thread/sec: 45.9794k
+Alpha: 0.0141623  Progress: 44.2696%  Words/thread/sec: 45.6021k
+Alpha: 0.0139326  Progress: 45.1651%  Words/thread/sec: 46.4933k
+Alpha: 0.0137087  Progress: 46.0472%  Words/thread/sec: 46.5485k
+Alpha: 0.0134882  Progress: 46.956%  Words/thread/sec: 45.9621k
+Alpha: 0.013261  Progress: 47.8682%  Words/thread/sec: 46.6862k
+Alpha: 0.0130329  Progress: 48.7537%  Words/thread/sec: 46.6366k
+Alpha: 0.0128116  Progress: 49.6725%  Words/thread/sec: 47.1586k
+Alpha: 0.0125819  Progress: 50.5881%  Words/thread/sec: 46.3737k
+Alpha: 0.012353  Progress: 51.507%  Words/thread/sec: 47.0607k
+Alpha: 0.0121233  Progress: 52.4258%  Words/thread/sec: 47.7458k
+Alpha: 0.0118935  Progress: 53.3347%  Words/thread/sec: 47.451k
+Alpha: 0.0116663  Progress: 54.2201%  Words/thread/sec: 46.7565k
+Alpha: 0.011445  Progress: 55.129%  Words/thread/sec: 47.1547k
+Alpha: 0.0112178  Progress: 56.0545%  Words/thread/sec: 47.8845k
+Alpha: 0.0109864  Progress: 56.9801%  Words/thread/sec: 48.3103k
+Alpha: 0.010755  Progress: 57.8689%  Words/thread/sec: 47.2387k
+Alpha: 0.0105328  Progress: 58.7911%  Words/thread/sec: 47.6602k
+Alpha: 0.0103022  Progress: 59.6732%  Words/thread/sec: 48.1824k
+Alpha: 0.0100817  Progress: 60.5821%  Words/thread/sec: 48.1809k
+Alpha: 0.00985448  Progress: 61.5043%  Words/thread/sec: 47.2391k
+Alpha: 0.00962393  Progress: 62.3964%  Words/thread/sec: 47.7305k
+Alpha: 0.0094009  Progress: 63.2852%  Words/thread/sec: 48.1547k
+Alpha: 0.0091787  Progress: 64.2041%  Words/thread/sec: 48.404k
+Alpha: 0.00894898  Progress: 65.0929%  Words/thread/sec: 47.3647k
+Alpha: 0.00872678  Progress: 65.9783%  Words/thread/sec: 47.77k
+Alpha: 0.00850541  Progress: 66.8705%  Words/thread/sec: 47.7518k
+Alpha: 0.00828238  Progress: 67.7827%  Words/thread/sec: 47.9591k
+Alpha: 0.00805433  Progress: 68.7016%  Words/thread/sec: 47.5927k
+Alpha: 0.00782461  Progress: 69.5903%  Words/thread/sec: 48.1536k
+Alpha: 0.00760241  Progress: 70.4992%  Words/thread/sec: 47.2606k
+Alpha: 0.0073752  Progress: 71.4147%  Words/thread/sec: 47.6091k
+Alpha: 0.00714632  Progress: 72.3169%  Words/thread/sec: 47.7192k
+Alpha: 0.00692078  Progress: 73.2124%  Words/thread/sec: 48.1425k
+Alpha: 0.00669691  Progress: 74.1212%  Words/thread/sec: 47.6118k
+Alpha: 0.00646969  Progress: 75.0401%  Words/thread/sec: 47.3781k
+Alpha: 0.00623998  Progress: 75.9256%  Words/thread/sec: 47.6672k
+Alpha: 0.00601861  Progress: 76.8478%  Words/thread/sec: 48.1856k
+Alpha: 0.00578806  Progress: 77.7399%  Words/thread/sec: 47.3484k
+Alpha: 0.00556502  Progress: 78.6621%  Words/thread/sec: 47.1268k
+Alpha: 0.00533447  Progress: 79.5676%  Words/thread/sec: 47.6147k
+Alpha: 0.00510809  Progress: 80.4564%  Words/thread/sec: 47.6852k
+Alpha: 0.00488589  Progress: 81.3586%  Words/thread/sec: 47.2989k
+Alpha: 0.00466035  Progress: 82.2708%  Words/thread/sec: 47.5768k
+Alpha: 0.0044323  Progress: 83.183%  Words/thread/sec: 47.64k
+Alpha: 0.00420426  Progress: 84.0818%  Words/thread/sec: 47.1224k
+Alpha: 0.00397955  Progress: 84.9773%  Words/thread/sec: 47.3101k
+Alpha: 0.00375568  Progress: 85.8627%  Words/thread/sec: 47.4117k
+Alpha: 0.00353432  Progress: 86.7449%  Words/thread/sec: 47.5358k
+Alpha: 0.00331379  Progress: 87.6303%  Words/thread/sec: 47.401k
+Alpha: 0.00309242  Progress: 88.5158%  Words/thread/sec: 47.0858k
+Alpha: 0.00287106  Progress: 89.4012%  Words/thread/sec: 47.2944k
+Alpha: 0.00264969  Progress: 90.2833%  Words/thread/sec: 47.6471k
+Alpha: 0.00242916  Progress: 91.1721%  Words/thread/sec: 47.5146k
+Thread 0 completed an epoch
+Alpha: 0.00220696  Progress: 92.8529%  Words/thread/sec: 47.6408k
+Alpha: 0.00178679  Progress: 93.7617%  Words/thread/sec: 47.5881k
+Alpha: 0.00155958  Progress: 94.6471%  Words/thread/sec: 47.4558k
+Alpha: 0.00133821  Progress: 95.5794%  Words/thread/sec: 47.8549k
+Thread 1 completed an epoch
+Alpha: 0.00110515  Progress: 97.0863%  Words/thread/sec: 47.9894k
+Alpha: 0.000728415  Progress: 97.9785%  Words/thread/sec: 48.1819k
+Thread 2 completed an epoch
+Alpha: 0.000505379  Progress: 99.5322%  Words/thread/sec: 48.2882k
+Thread 3 completed an epoch

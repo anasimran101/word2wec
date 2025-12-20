@@ -31,9 +31,9 @@ int numBlock;
 int shared_mem_usage;
 
 
-void cudaErrorCheck(cudaError_t err) {
+void cudaErrorCheck(cudaError_t err, int line=0, const char *file=0){
 	if (err != cudaSuccess) {
-		std::cerr << "CUDA Error: " << cudaGetErrorString(err) << " at " << __FILE__ << ":" << __LINE__ << std::endl;
+		std::cerr << "CUDA Error: " << cudaGetErrorString(err) << " at " << file << ":" << line << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }
@@ -70,20 +70,19 @@ void __global__ device_cbow(int sentence_num, int layer1_size, int layer1_size_a
 		float * d_syn0, float *d_syn1neg,
 		unsigned int * d_random){
 
-
 	int sentence_position = (threadIdx.x / THREADS_PER_WORD) + (blockDim.x / THREADS_PER_WORD) * blockIdx.x;
 	int idInWarp = threadIdx.x % THREADS_PER_WORD;
+
 
 	extern __shared__ float shared[];
 	float * f = shared + (threadIdx.x / THREADS_PER_WORD) * THREADS_PER_WORD;
 	float * neu1 = shared + BLOCK_SIZE + (threadIdx.x / THREADS_PER_WORD) * layer1_size_aligned;
 	float * neu1e= shared + BLOCK_SIZE + (blockDim.x / THREADS_PER_WORD) * layer1_size_aligned + (threadIdx.x / THREADS_PER_WORD) * layer1_size_aligned;
-
+			
 	if (sentence_position < MAX_SENTENCE_LENGTH) {
+		
 		unsigned int next_random = d_random[sentence_position];
-
 		for (int sentence_idx = 0; sentence_idx < sentence_num; sentence_idx++){
-
 			for (int c = idInWarp; c < layer1_size; c+=THREADS_PER_WORD) neu1[c] = 0;
 			for (int c = idInWarp; c < layer1_size; c+=THREADS_PER_WORD) neu1e[c] = 0;
 
@@ -175,6 +174,7 @@ void __global__ device_cbow(int sentence_num, int layer1_size, int layer1_size_a
 
 					for (int c = idInWarp; c < layer1_size; c+=THREADS_PER_WORD)
 						d_syn0[c + last_word * layer1_size_aligned] += neu1e[c];
+					
 
 				}
 			}
@@ -189,11 +189,11 @@ void __global__ device_cbow(int sentence_num, int layer1_size, int layer1_size_a
 void initGpu() {
 	// Device query
 	int nDevices;
-	cudaErrorCheck(cudaGetDeviceCount(&nDevices));
+	cudaErrorCheck(cudaGetDeviceCount(&nDevices), __LINE__, __FILE__);
     printf("Number of CUDA devices: %d\n", nDevices);
 	for (int i = 0; i < nDevices; i++) {
 	    cudaDeviceProp prop;
-	    cudaErrorCheck(cudaGetDeviceProperties(&prop, i));
+	    cudaErrorCheck(cudaGetDeviceProperties(&prop, i), __LINE__, __FILE__);
 		std::cout << "Device name: " << prop.name << std::endl; 
 	    std::cout << "\tMemory Clock Rate (KHz): " << prop.memoryClockRate << std::endl;
 	    std::cout << "\tMemory Bus Width (bits): " << prop.memoryBusWidth << std::endl;
@@ -203,9 +203,9 @@ void initGpu() {
 		std::cout << std::endl;
 	}
 	int device = 0;
-	cudaErrorCheck(cudaSetDevice(device));
+	cudaErrorCheck(cudaSetDevice(device), __LINE__, __FILE__);
 	cudaDeviceProp prop;
-	cudaErrorCheck(cudaGetDeviceProperties(&prop, device));
+	cudaErrorCheck(cudaGetDeviceProperties(&prop, device), __LINE__, __FILE__);
 	maxThreadsPerBlock = prop.maxThreadsPerBlock;
 #if defined(DEBUG)
 	printf(" Max Threads Per Block %d\n", maxThreadsPerBlock);
@@ -216,32 +216,32 @@ void initGpu() {
 		h_expTable[i] = exp((i / (float)EXP_TABLE_SIZE * 2 - 1) * MAX_EXP);
 		h_expTable[i] = h_expTable[i] / (h_expTable[i] + 1);
 	}
-	cudaErrorCheck(cudaMemcpyToSymbol(expTable, h_expTable, sizeof(float) * EXP_TABLE_SIZE));
+	cudaErrorCheck(cudaMemcpyToSymbol(expTable, h_expTable, sizeof(float) * EXP_TABLE_SIZE), __LINE__, __FILE__);
 	free(h_expTable);
 
 	if (negative>0) {
 		int syn1neg_size = vocab_size * layer1_size_aligned;
-		cudaErrorCheck(cudaMalloc((void**) & d_syn1neg, syn1neg_size * sizeof(float)));
+		cudaErrorCheck(cudaMalloc((void**) & d_syn1neg, syn1neg_size * sizeof(float)), __LINE__, __FILE__);
 		// call memset kernel
 		device_memset<<<syn1neg_size / maxThreadsPerBlock + 1, maxThreadsPerBlock>>>(d_syn1neg, syn1neg_size );
-		cudaErrorCheck(cudaGetLastError());
-		cudaErrorCheck(cudaDeviceSynchronize());
+		cudaErrorCheck(cudaGetLastError(), __LINE__, __FILE__);
+		cudaErrorCheck(cudaDeviceSynchronize(), __LINE__, __FILE__);
 
 	}
 
 	int syn0_size = vocab_size * layer1_size_aligned;
-	cudaErrorCheck(cudaMalloc((void**) & d_syn0, syn0_size * sizeof(float)));
-	cudaErrorCheck(cudaMemcpy(d_syn0, syn0, syn0_size * sizeof(float), cudaMemcpyHostToDevice));
+	cudaErrorCheck(cudaMalloc((void**) & d_syn0, syn0_size * sizeof(float)), __LINE__, __FILE__);
+	cudaErrorCheck(cudaMemcpy(d_syn0, syn0, syn0_size * sizeof(float), cudaMemcpyHostToDevice), __LINE__, __FILE__);
 
-	cudaErrorCheck(cudaMallocHost((void**)&sen, (MAX_SENTENCE_NUM * MAX_SENTENCE_LENGTH + MAX_SENTENCE_NUM) * sizeof(int) ));
-	cudaErrorCheck(cudaMalloc((void**)& d_sen, (MAX_SENTENCE_NUM * MAX_SENTENCE_LENGTH + MAX_SENTENCE_NUM) * sizeof(int) ));
+	cudaErrorCheck(cudaMallocHost((void**)&sen, (MAX_SENTENCE_NUM * MAX_SENTENCE_LENGTH + MAX_SENTENCE_NUM) * sizeof(int) ), __LINE__, __FILE__);
+	cudaErrorCheck(cudaMalloc((void**)& d_sen, (MAX_SENTENCE_NUM * MAX_SENTENCE_LENGTH + MAX_SENTENCE_NUM) * sizeof(int) ), __LINE__, __FILE__);
 
-	cudaErrorCheck(cudaMalloc((void**) & d_random, MAX_SENTENCE_LENGTH * sizeof(unsigned int)));
+	cudaErrorCheck(cudaMalloc((void**) & d_random, MAX_SENTENCE_LENGTH * sizeof(unsigned int)), __LINE__, __FILE__);
 	int h_random[MAX_SENTENCE_LENGTH];
 	for (int i = 0 ; i < MAX_SENTENCE_LENGTH; i++) h_random[i] = (unsigned int) rand();
-	cudaErrorCheck(cudaMemcpy(d_random, h_random, MAX_SENTENCE_LENGTH * sizeof(unsigned int), cudaMemcpyHostToDevice));
+	cudaErrorCheck(cudaMemcpy(d_random, h_random, MAX_SENTENCE_LENGTH * sizeof(unsigned int), cudaMemcpyHostToDevice), __LINE__, __FILE__);
 
-	cudaErrorCheck(cudaMalloc((void**) & d_table, table_size * sizeof(int)));
+	cudaErrorCheck(cudaMalloc((void**) & d_table, table_size * sizeof(int)), __LINE__, __FILE__);
 	cudaMemcpy(d_table, table, table_size * sizeof(int), cudaMemcpyHostToDevice);
 
 	numBlock = MAX_SENTENCE_LENGTH / (BLOCK_SIZE/THREADS_PER_WORD) + 1;
@@ -251,12 +251,11 @@ void initGpu() {
 
 void TransferDataToGPU(){
 	cudaErrorCheck(cudaMemcpy( d_sen, sen,
-				(MAX_SENTENCE_NUM * MAX_SENTENCE_LENGTH + MAX_SENTENCE_NUM) * sizeof(int) , cudaMemcpyHostToDevice));
+				(MAX_SENTENCE_NUM * MAX_SENTENCE_LENGTH + MAX_SENTENCE_NUM) * sizeof(int) , cudaMemcpyHostToDevice), __LINE__, __FILE__);
 }
 
 void getResultData(){
-	cudaErrorCheck(cudaMemcpy(syn0, d_syn0, vocab_size * layer1_size_aligned * sizeof(float), cudaMemcpyDeviceToHost));
-
+	cudaErrorCheck(cudaMemcpy(syn0, d_syn0, vocab_size * layer1_size_aligned * sizeof(float), cudaMemcpyDeviceToHost), __LINE__, __FILE__);
 }
 
 void trainGpu(int sentence_num) {
@@ -265,18 +264,18 @@ void trainGpu(int sentence_num) {
 	device_cbow<<<numBlock,BLOCK_SIZE, shared_mem_usage >>>(sentence_num, layer1_size, layer1_size_aligned, window,
 			 negative, table_size,  vocab_size,	 d_sen, d_table, d_syn0, d_syn1neg, d_random);
 
-#if defined(DEBUG)
-	cudaErrorCheck(cudaGetLastError());
-	cudaErrorCheck(cudaDeviceSynchronize());
-#endif
+
+	cudaErrorCheck(cudaGetLastError(), __LINE__, __FILE__);
+	cudaErrorCheck(cudaDeviceSynchronize(), __LINE__, __FILE__);
+
 
 }
 
 void freeGpu(){
-	cudaErrorCheck(cudaFree(d_syn1neg));
-	cudaErrorCheck(cudaFree(d_syn0));
-	cudaErrorCheck(cudaFreeHost(sen));
-	cudaErrorCheck(cudaFree(d_sen));
-	cudaErrorCheck(cudaFree(d_random));
-	cudaErrorCheck(cudaFree(d_table));
+	cudaErrorCheck(cudaFree(d_syn1neg), __LINE__, __FILE__);
+	cudaErrorCheck(cudaFree(d_syn0), __LINE__, __FILE__);
+	cudaErrorCheck(cudaFreeHost(sen), __LINE__, __FILE__);
+	cudaErrorCheck(cudaFree(d_sen), __LINE__, __FILE__);
+	cudaErrorCheck(cudaFree(d_random), __LINE__, __FILE__);
+	cudaErrorCheck(cudaFree(d_table), __LINE__, __FILE__);
 }

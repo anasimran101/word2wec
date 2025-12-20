@@ -6,8 +6,6 @@
 #include <string>
 
 
-#define MAX_STRING 100
-
 struct word {
     std::string word;
     int count;

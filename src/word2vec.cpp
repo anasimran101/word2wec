@@ -21,14 +21,14 @@ std::ifstream fin;
 
 int window = 5, min_count = 5, num_threads = 4, min_reduce = 1;
 
-int vocab_size = 0, layer1_size = 5, layer1_size_aligned = ((layer1_size + 15) / 16) * 16;
+int vocab_size = 0, layer1_size = 100, layer1_size_aligned = ((layer1_size + 15) / 16) * 16;
 long long train_words = 0, word_count_actual = 0, file_size = 0;
 int epochs = 1;
 float alpha = 0.025, starting_alpha, sample = 1e-3;
 float *syn0;
 int *sen;
 clock_t start;
-int table_size = 100;
+int table_size = 1e8;
 int *table;
 bool binary = false;
 int negative = 5;
@@ -127,7 +127,7 @@ void *TrainModelThread(void *id)
     std::string word;
     while (1)
     {
-        if (word_count - last_word_count > 5)
+        if (word_count - last_word_count > (vocab_size / 20))
         {
             // No mutual exclusion here for word_count_actual, which is ok (hogwild)
             word_count_actual += word_count - last_word_count;
@@ -164,8 +164,10 @@ void *TrainModelThread(void *id)
                 if (ran < (next_random & 0xFFFF) / (float)65536)
                     continue;
             }
+            //std::cout << "Stored word: " << word << " Index: " << word_index << std::endl;
             sen[sentence_num * MAX_SENTENCE_LENGTH + sentence_length] = word_index;
             sentence_length++;
+            //std::cout << "Sentence " << sentence_num << " Length: " << sentence_length << " MAX_SENTENCE_LENGTH: " << MAX_SENTENCE_LENGTH << std::endl;
             if (sentence_length >= MAX_SENTENCE_LENGTH)
             {
                 alpha_ptr[sentence_num] = alpha;
@@ -179,6 +181,7 @@ void *TrainModelThread(void *id)
             
 
         // Do GPU training here
+        //printf("Thread %ld: Training on %d sentences\n", (long)id, sentence_num);
         trainGpu(sentence_num);
         //////////////////////
         sentence_num = 0;
@@ -210,17 +213,17 @@ void TrainModel()
     if (!read_vocab_file.empty())
 
         loadFromVocabFile(read_vocab_file);
-    else
+    else {
         loadFromTrainFile(train_corpus_file);
-    if (!save_vocab_file.empty())
-        saveVocab();
+        if (!save_vocab_file.empty()) saveVocab();
+    }
     if (output_file.empty())
         return;
     
     InitNet();
     initUnigramDistribuiton();
-    logPrameters();
     initGpu();
+    logPrameters();
     saveVectors("init_vectors.txt");
     
     start = clock();
@@ -232,7 +235,7 @@ void TrainModel()
     // Save  the word_index vectors
     saveVectors(output_file);
     
-    //free(pt);
+    free(pt);
 }
 
 void destroy()
@@ -258,7 +261,7 @@ void testsen(){
             if (sen[i * MAX_SENTENCE_LENGTH + j] != -1)
             {
                 size_t k =sen[i * MAX_SENTENCE_LENGTH + j];
-                if (k < vocab_list.size())
+                if (k < vocab_list.size() && k >= 0)
                     std::cout << vocab_list[k].word << " ";
             }
         std::cout << std::endl;
@@ -290,10 +293,10 @@ int main()
     //testtable();
 
     std::cout << "Training model" << std::endl;
-    train_corpus_file = "corpus/minimal.txt";
+    train_corpus_file = "corpus/alice.txt";
     output_file = "vectors.txt";
-    read_vocab_file="";
-    save_vocab_file = "vocab/minimal_vocab.txt";
+    //read_vocab_file="vocab/alice_vocab.txt";
+    save_vocab_file = "vocab/alice_vocab.txt";
     TrainModel();
     destroy();
     return 0;
