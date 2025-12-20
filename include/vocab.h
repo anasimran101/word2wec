@@ -26,3 +26,4 @@ int loadFromVocabFile(const std::string& vocab_file);
 int loadFromTrainFile(const std::string& train_corpus_file);
 int getWordIndex(const std::string& word);
 int saveVocab();
+void removeLessFrequentWords(int min_count);
