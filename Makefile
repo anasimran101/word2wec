@@ -41,4 +41,7 @@ build/%.o: src/%.cu
 clean:
 	rm -rf build $(TARGET)
 
+run: $(TARGET)
+	make && ./$(TARGET)
+
 .PHONY: all clean

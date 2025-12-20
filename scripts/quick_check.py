@@ -19,9 +19,6 @@ def cosine_similarity(vec1, vec2):
     return np.dot(vec1, vec2) / (norm(vec1) * norm(vec2))
 
 # Print cosine similarity between king and queen
-w1, w2 = 'king', 'queen'
-sim = cosine_similarity(embeddings[w1], embeddings[w2])
-print(f"Cosine similarity between '{w1}' and '{w2}': {sim:.4f}")
 
 # Word analogy: king - man + woman = ?
 def word_analogy(word_a, word_b, word_c, embeddings):
@@ -42,8 +39,6 @@ def word_analogy(word_a, word_b, word_c, embeddings):
             best_word = word
     return best_word
 
-result = word_analogy('king', 'man', 'woman', embeddings)
-print(f"'king' - 'man' + 'woman' = '{result}'")
 
 # --- New part: print top 5 words similar to 'king' ---
 def most_similar(word, embeddings, top_n=5):
@@ -58,7 +53,7 @@ def most_similar(word, embeddings, top_n=5):
     similarities.sort(key=lambda x: x[1], reverse=True)
     return similarities[:top_n]
 
-similar_words = most_similar('king', embeddings, top_n=5)
-print(f"Words most similar to 'king':")
+similar_words = most_similar('alice', embeddings, top_n=5)
+print(f"Words most similar to 'alice':")
 for w, sim in similar_words:
     print(f"  {w} : {sim:.4f}")
