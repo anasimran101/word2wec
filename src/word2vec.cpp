@@ -83,6 +83,8 @@ void logPrameters() {
     std::cout << "Negative samples: " << negative << std::endl;
     std::cout << "Epochs: " << epochs << std::endl;
     std::cout << "Threads: " << num_threads << std::endl;
+    std::cout << "MAX_SENTENCE_LENGTH: " << MAX_SENTENCE_LENGTH << std::endl;
+    std::cout << "MAX_SENTENCE_NUM: " << MAX_SENTENCE_NUM << std::endl;
 }
 
 int saveVectors(const std::string filename) {
@@ -128,7 +130,7 @@ void *TrainModelThread(void *id)
     std::string word;
     while (1)
     {
-        if (word_count - last_word_count > (vocab_size / 20))
+        if (word_count - last_word_count > (train_words * epochs / 10 + 1))
         {
             // No mutual exclusion here for word_count_actual, which is ok (hogwild)
             word_count_actual += word_count - last_word_count;
@@ -157,8 +159,7 @@ void *TrainModelThread(void *id)
             if (sample > 0)
             {
                 //sample frequent words
-                float v = (float)vocab_list[word_index].count / (sample * train_words);
-                float ran = (sqrt(v) + 1.0f) / v;
+                float ran = (sqrt(vocab_list[word_index].count / (sample * train_words)) + 1) * (sample * train_words) / vocab_list[word_index].count;
                 //psuedorandom number generator xn+1 = (a * xn + c) mod m
                 next_random = next_random * (unsigned int)1664525 + 1013904223;
                 // convert to [0,1] using lower 16 bits.
@@ -221,7 +222,7 @@ void TrainModel()
     }
     if (output_file.empty())
         return;
-    
+    removeLessFrequentWords(min_count);
     InitNet();
     initUnigramDistribuiton();
     initGpu();
