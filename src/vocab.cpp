@@ -113,3 +113,21 @@ int saveVocab() {
     file.close();
     return 0;
 }
+
+void removeLessFrequentWords(int min_count)
+{
+    std::vector<word> new_vocab_list;
+    std::unordered_map<std::string, int> new_vocab_hash;    
+    for (const auto &w : vocab_list)
+    {
+        if (w.count >= min_count)
+        {
+            int index = new_vocab_list.size();
+            new_vocab_list.push_back(w);
+            new_vocab_hash[w.word] = index;
+        }
+    }
+    vocab_list = std::move(new_vocab_list);
+    vocab_hash = std::move(new_vocab_hash);
+    vocab_size = vocab_list.size();
+}
