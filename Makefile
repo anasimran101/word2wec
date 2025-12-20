@@ -42,6 +42,6 @@ clean:
 	rm -rf build $(TARGET)
 
 run: $(TARGET)
-	make && ./$(TARGET)
+	make && ./$(TARGET) && cat ./vectors.txt | grep "$(cat ./init_vectors.txt | head -n 100)"
 
 .PHONY: all clean
