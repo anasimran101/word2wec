@@ -23,7 +23,7 @@ int window = 5, min_count = 5, num_threads = 4, min_reduce = 1;
 
 int vocab_size = 0, layer1_size = 100, layer1_size_aligned = ((layer1_size + 15) / 16) * 16;
 long long train_words = 0, word_count_actual = 0, file_size = 0;
-int epochs = 1;
+int epochs = 20;
 float alpha = 0.025, starting_alpha, sample = 1e-3;
 float *syn0;
 int *sen;
@@ -122,6 +122,7 @@ void *TrainModelThread(void *id)
     float *alpha_ptr = (float *)sen + MAX_SENTENCE_NUM * MAX_SENTENCE_LENGTH;
     std::ifstream fi(train_corpus_file, std::ios::in);
     fi.seekg(std::ios::pos_type(file_size / (int)num_threads * (long)id));
+    std::cout << "Thread " << (long)id << "cursor starting at position " << fi.tellg() << std::endl;
     sentence_length = 0;
     sentence_num = 0;
     std::string word;
@@ -143,7 +144,7 @@ void *TrainModelThread(void *id)
         }
         while (1)
         {
-            loadWordFromFile(word,fi);
+            if(!loadWordFromFile(word,fi)) break;
             word_index = getWordIndex(word); 
             if (fi.eof())
                 break;
@@ -183,22 +184,23 @@ void *TrainModelThread(void *id)
         // Do GPU training here
         //printf("Thread %ld: Training on %d sentences\n", (long)id, sentence_num);
         trainGpu(sentence_num);
-        //////////////////////
         sentence_num = 0;
         sentence_length = 0;
-
+        
         if (fi.eof() || (word_count > train_words / num_threads))
         {
-            std::cout << "Thread " << (long)id << " completed an epoch" << std::endl;
+            //std::cout << "Thread " << (long)id << " completed epoch: " <<    epochs - local_iter << std::endl;
             word_count_actual += word_count - last_word_count;
             local_iter--;
             if (local_iter == 0)
                 break;
             word_count = 0;
             last_word_count = 0;
+            fi.clear();
             fi.seekg(std::ios::pos_type(file_size / (int)num_threads * (long)id));
         }
     }
+    std::cout << "Thread " << (long)id << " completed execution\n";
     getResultData();
     fi.close();
     pthread_exit(NULL);
@@ -293,7 +295,7 @@ int main()
     //testtable();
 
     std::cout << "Training model" << std::endl;
-    train_corpus_file = "corpus/alice.txt";
+    train_corpus_file = "corpus/alice_corpus_preped.txt";
     output_file = "vectors.txt";
     //read_vocab_file="vocab/alice_vocab.txt";
     save_vocab_file = "vocab/alice_vocab.txt";
